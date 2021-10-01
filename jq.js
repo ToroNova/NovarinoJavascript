@@ -1,9 +1,10 @@
 
 
 class Pedido{
-    constructor(nroPedido,pedido){
-        this.nroPedido = nroPedido;
-        this.pedido = pedido;
+    constructor(productos,cantidad,total){
+        this.productos = productos;
+        this.cantidad = cantidad;
+        this.total = total;
     }
 }
 
@@ -13,20 +14,21 @@ let pedidos = []
 
 
 
-$("#btn").on("click", () =>{
-    let numero = $("#nroPedido").val()
-    let pedido = $("#pedido").val()
+$("#btnComprar").on("click", () =>{
+    let productos = $(".nombreProducto").text()
+    let cantidad = $(".cantidadProducto").val()
+    let total = $(".totalCarrito").text()
     
     
     if (JSON.parse(localStorage.getItem("pedidos") != null)) {
         let index = pedidos.length + 1
         pedidos = JSON.parse(localStorage.getItem("pedidos"))
-        let nuevoPedido = new Pedido(numero,pedido,index)
+        let nuevoPedido = new Pedido(productos,cantidad,total,index)
         pedidos.push(nuevoPedido)
         localStorage.setItem("pedidos", JSON.stringify(pedidos))
     } else {
         let index = 1
-        let nuevoPedido = new Pedido(numero,pedido,index)
+        let nuevoPedido = new Pedido(productos,cantidad,total,index)
         pedidos.push(nuevoPedido)
         localStorage.setItem("pedidos", JSON.stringify(pedidos)) 
     } 
@@ -34,22 +36,8 @@ $("#btn").on("click", () =>{
     
 })
 
+
 /*
-const imprimirPedido = () => {
-    let pedidos = JSON.parse(localStorage.getItem("pedidos"))
-
-    pedidos.forEach(e => {
-
-        $("#print").append(`
-        <h2> ${e.nroPedido}</h2>
-        <p> ${e.pedido}</p>
-        `)
-
-    });
-}
-*/
-
-
 const imprimirPedido = () => {
 
     let imprimirDatos = JSON.parse(localStorage.getItem("pedidos"))
@@ -68,3 +56,4 @@ const imprimirPedido = () => {
 }
 
 imprimirPedido()
+*/

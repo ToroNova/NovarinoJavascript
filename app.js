@@ -23,6 +23,9 @@ class Producto {
  *          VARIABLES / CONSTANTES / SELECTORES
  *************************************************************/
 
+containerCart =  document.querySelector(".containerCart")
+const dolarApi = "https://www.dolarsi.com/api/api.php?type=valoresprincipales"
+
 const listaComidas = []
 
 const comida1 = new Producto ("Hamburguesa", 500, "cheddar", 20, "./img/burger.png")
@@ -37,104 +40,187 @@ listaComidas.push(comida3)
 listaComidas.push(comida4)
 listaComidas.push(comida5)
 
-console.log(listaComidas);
-
-
-listaComidas.forEach(e => {
-
-    let row = document.querySelector(".row")
-
+fetch(dolarApi)
+.then(res => res.json())
+.then(data =>{
+    //console.log(data[0].casa.compra);
+    let containerDolar = document.querySelector(".api")
+    
     let div = document.createElement("div")
-    div.setAttribute("class", "col mt-5")
-    row.appendChild(div)
+    div.setAttribute("class", "col mt-5 dolarOficial")
+    div.textContent = `Valor Dolar Compra: $${data[0].casa.compra}`
+    containerDolar.appendChild(div)
 
-    let div1 = document.createElement("div")
-    div1.setAttribute("class", "card bg-dark text-white text-center")
-    div1.setAttribute("style", "width: 15rem;")
-    div.appendChild(div1)
+    listaComidas.forEach(e => {
+        let pasarDolar = parseInt(data[0].casa.compra)
+        let precioDolar = (e.precio / pasarDolar).toFixed(2)
+        let row = document.querySelector(".row")
+            
+        let div = document.createElement("div")
+        div.setAttribute("class", "col mt-5")
+        row.appendChild(div)
+    
+        let div1 = document.createElement("div")
+        div1.setAttribute("class", "card bg-dark text-white text-center")
+        div1.setAttribute("style", "width: 15rem;")
+        div.appendChild(div1)
+    
+        let img1 = document.createElement("img")
+        img1.setAttribute("class", "card-img-top ")
+        img1.setAttribute("src", `${e.imagen}`)
+        div1.appendChild(img1)
+    
+        let div2 = document.createElement("div")
+        div2.setAttribute("class", "card-body")
+        div1.appendChild(div2)
+    
+        let pComida = document.createElement("p")
+        pComida.setAttribute("class","card-tittle producto")
+        pComida.textContent = `${e.comida}`
+        div2.appendChild(pComida)
+    
+    
+        let p1 = document.createElement("p")
+        p1.setAttribute("class", "card-text mt-4")
+        p1.textContent = `Unidades restantes: ${e.stock}`
+        div2.appendChild(p1)
+    
+        let p2 = document.createElement("p")
+        p2.setAttribute("class", "card-text precio")
+        p2.textContent = `$${e.precio}`
+        div2.appendChild(p2)
 
-    let img1 = document.createElement("img")
-    img1.setAttribute("class", "card-img-top ")
-    img1.setAttribute("src", `${e.imagen}`)
-    div1.appendChild(img1)
+        let p3 = document.createElement("p")
+        p3.setAttribute("class", "card-text precioDolar")
+        p3.textContent = `U$S ${precioDolar}`
+        div2.appendChild(p3)
+    
+        let botonCompra =  document.createElement("button")
+        botonCompra.setAttribute("type","button")   
+        botonCompra.setAttribute("class","btn btn-primary agregar") 
+        botonCompra.textContent = `Añadir al carrito`
+        div2.appendChild(botonCompra)
+    
+    })
+    const deleteProduct = (event) => {
+        const click = event.target;
+        click.closest('.divContainerCartProduct').remove()
+        actualizarTotal()
+    }
+    
+    const actualizarCantidad = (event) => {
+        let input = event.target;
+        if(input.value <=0){
+            input.value = 1
+        }
+        actualizarTotal();
+    }
+    
+    const actualizarTotal = () =>{
+        let total = 0
+        let totalDolar = 0
 
-    let div2 = document.createElement("div")
-    div2.setAttribute("class", "card-body ")
-    div2.textContent = `${e.comida}`
-    div1.appendChild(div2)
+        const totalCarrito = document.querySelector('.totalCarrito')
+        const totalCarritoDolar = document.querySelector('.totalCarritoDolar')
 
-    let p1 = document.createElement("p")
-    p1.setAttribute("class", "card-text mt-4")
-    p1.textContent = `Unidades restantes: ${e.stock}`
-    div2.appendChild(p1)
+        const divContainerCartProduct = document.querySelectorAll('.divContainerCartProduct')
+    
+        divContainerCartProduct.forEach(e =>{
+            const precioProductoNumero = e.querySelector('.precioProducto');
+            const precioProducto = parseInt(precioProductoNumero.textContent.replace('$',''));
+            const cantidadProductoNumero = e.querySelector('.cantidadProducto');
+            const cantidadProducto = Number(cantidadProductoNumero.value);
+            
+            total = total + precioProducto * cantidadProducto
+            
+        })
 
-    let p2 = document.createElement("p")
-    p2.setAttribute("class", "card-text")
-    p2.textContent = `Precio por unidad: $${e.precio}`
-    div2.appendChild(p2)
+        divContainerCartProduct.forEach(e =>{
+            const precioProductoNumero = e.querySelector('.precioProductoDolar');
+            const precioProductoDolar = (precioProductoNumero.textContent.replace('U$S',''));
+            const cantidadProductoNumero = e.querySelector('.cantidadProducto');
+            const cantidadProducto = Number(cantidadProductoNumero.value);
+            
+            totalDolar = totalDolar + precioProductoDolar * cantidadProducto
+            
+        })
 
+    
+        totalCarrito.innerHTML = `$${total}` 
+        totalCarritoDolar.innerHTML = `$${totalDolar}` 
+    
+    }
+
+    
+    
+    const printProduct = (event) => {
+        const click = event.target;
+        const itemCard = click.closest('.card')
+    
+        const producto = itemCard.querySelector('.producto').textContent
+        const precio = itemCard.querySelector('.precio').textContent
+        const precioDolar = itemCard.querySelector('.precioDolar').textContent
+
+        agregarCarrito (producto,precio,precioDolar)
+    }
+    
+    const agregarCarrito = (producto,precio,precioDolar) => {
+    
+        let nombreProducto = containerCart.getElementsByClassName('nombreProducto')
+        
+        for(let i = 0; i < nombreProducto.length; i++){
+            if(nombreProducto[i].innerHTML == producto){
+                let cantidadProducto = nombreProducto[i].parentElement.parentElement.querySelector('.cantidadProducto');
+                cantidadProducto.value++;
+                actualizarTotal()
+                return;
+            }
+        }
+    
+        let divContainerCart = document.createElement("div")
+        
+        let printCart = `
+        <div class="row ms-4 divContainerCartProduct">
+        <div class="col-3">
+        <p class ="nombreProducto">${producto}</p>
+        </div>
+    
+        <div class="col-3">
+        <p class ="precioProducto">${precio}</p>
+        </div>  
+
+        <div class="col-3">
+        <p class ="precioProductoDolar">${precioDolar}</p>
+        </div>  
+    
+        <div class="col-3">
+        <input class="cantidadProducto" type="number" value="1" >
+        <button type="button" class="borrarProduct btn btn-danger">X</button>
+        </div> 
+        </div> 
+    
+         
+        `
+        divContainerCart.innerHTML = printCart
+        containerCart.appendChild(divContainerCart)
+      
+        divContainerCart.querySelector(".borrarProduct").addEventListener("click",deleteProduct)
+    
+        divContainerCart.querySelector(".cantidadProducto").addEventListener("change",actualizarCantidad)
+    
+        actualizarTotal()
+    }
+    
+    
+    
+    let clickButton = document.querySelectorAll('.agregar')
+    
+    clickButton.forEach(event => {
+        event.addEventListener('click',printProduct)
+    
+    }) 
 })
 
-    
-    /*
-alert(`BIENVENIDO A LA PIZZERIA`)
-let preguntaComida = prompt(`Que comida desea? Tenemos disponible ${comida1.comida}, ${comida2.comida}, ${comida3.comida}, ${comida4.comida}, ${comida5.comida} `)
-
-let decision = (pregunta,respuesta,precio,stock,clase) => {
-    if (pregunta == respuesta){
-        let confirmacion = confirm(`El precio de ${respuesta} es de ${precio}, desea continuar?`) 
-        if(confirmacion == true){
-           let confirmarCantidad = Number(prompt(`que cantidad queres? Tenemos disponible ${stock}`)) 
-           if(confirmarCantidad <= stock){ 
-               alert(`Estamos preparando tu pedido, el total a abonar es de $ ${precio*confirmarCantidad}`)
-               console.log(`El stock restante es de ${stock - confirmarCantidad}`);
-           } else {
-               alert(`No tenemos esa cantidad.`)
-           }
-        
-       } 
-        
-       
-    }
-}
-
-switch (preguntaComida) {
-    case "hamburguesa": decision(preguntaComida,comida1.comida,comida1.precio,comida1.stock,comida1)
-
-        break;
-
-    case "pancho": decision(preguntaComida,comida2.comida,comida2.precio,comida2.stock,comida2)
-
-        break;
-
-    case "superpancho": decision(preguntaComida,comida3.comida,comida3.precio,comida3.stock,comida3)
-        
-        break;
-
-    case "pizza": decision(preguntaComida,comida4.comida,comida4.precio,comida4.stock,comida4)
-        
-        break;
-
-    case "empanada": decision(preguntaComida,comida.comida,comida5.precio,comida5.stock,comida5)
-        
-        break;
-
-    default:
-        let nuevaDecision = confirm("NO EXISTE ESE PRODUCTO, ¿DESEA VOLVER A INTENTAR?");
-       
-    break;
-    
-} 
-
-let masBarato = listaComidas.find(e => e.precio <= 100)
-console.log(masBarato);
-*/
 
 
-        
-
-
-/**************************************************************
- *                        Logica
- *************************************************************/
 
